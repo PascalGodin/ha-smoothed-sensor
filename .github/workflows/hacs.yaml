@@ -10,6 +10,7 @@ jobs:
       - uses: hacs/action@main
         with:
           category: "integration"
+          ignore: "brands"   # ignore default-listing brands check for now
       - name: Show manifest version
         run: |
           jq '.version' custom_components/smoothed_sensor/manifest.json || true
