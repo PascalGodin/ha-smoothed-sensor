@@ -1,0 +1,26 @@
+name: Check manifest version matches tag
+on:
+  release:
+    types: [published]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read tag
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Extract version from manifest.json
+        id: manifest
+        run: |
+          VER=$(jq -r '.version' custom_components/smoothed_sensor/manifest.json)
+          echo "VER=$VER" >> $GITHUB_ENV
+      - name: Compare
+        run: |
+          TAG_CLEAN=${TAG#v}
+          if [ "$TAG_CLEAN" != "$VER" ]; then
+            echo "Tag ($TAG) does not match manifest.json version ($VER)"
+            exit 1
+          fi
