@@ -1,9 +1,5 @@
 {
   "name": "Smoothed Sensor (EMA)",
   "render_readme": true,
-  "domains": [
-    "smoothed_sensor"
-  ],
-  "country": "ALL",
   "homeassistant": "2024.12.0"
 }
