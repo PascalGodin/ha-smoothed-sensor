@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Create a Smoothed Sensor (EMA)",
+        "description": "Aggregates the source within each update interval, then applies EMA with your chosen decay time. Creates one output sensor.",
+        "data": {
+          "name": "Name",
+          "source": "Source sensor",
+          "interval": "Update interval (seconds)",
+          "decay_time": "Decay time τ (seconds)",
+          "unit": "Unit (optional)",
+          "aggregation": "Aggregation within interval"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Edit Smoothed Sensor",
+        "data": {
+          "name": "Name",
+          "source": "Source sensor",
+          "interval": "Update interval (seconds)",
+          "decay_time": "Decay time τ (seconds)",
+          "unit": "Unit (optional)",
+          "aggregation": "Aggregation within interval"
+        }
+      }
+    }
+  }
+}
