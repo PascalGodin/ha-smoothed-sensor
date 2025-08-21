@@ -3,14 +3,15 @@
     "step": {
       "user": {
         "title": "Create a Smoothed Sensor (EMA)",
-        "description": "Aggregates the source within each update interval, then applies EMA with your chosen decay time. Creates one output sensor.",
+        "description": "Aggregates the source within each update interval, then applies exponential smoothing (EMA) with your chosen decay time. Creates one output sensor, and optionally exposes the raw input as a separate sensor.",
         "data": {
           "name": "Name",
           "source": "Source sensor",
           "interval": "Update interval (seconds)",
-          "decay_time": "Decay time τ (seconds)",
-          "unit": "Unit (optional)",
-          "aggregation": "Aggregation within interval"
+          "decay_time_min": "Decay time τ (minutes)",
+          "unit": "Override unit (optional)",
+          "aggregation": "Aggregation per interval",
+          "expose_input": "Expose input as separate sensor"
         }
       }
     }
@@ -23,9 +24,10 @@
           "name": "Name",
           "source": "Source sensor",
           "interval": "Update interval (seconds)",
-          "decay_time": "Decay time τ (seconds)",
-          "unit": "Unit (optional)",
-          "aggregation": "Aggregation within interval"
+          "decay_time_min": "Decay time τ (minutes)",
+          "unit": "Override unit (optional)",
+          "aggregation": "Aggregation per interval",
+          "expose_input": "Expose input as separate sensor"
         }
       }
     }
