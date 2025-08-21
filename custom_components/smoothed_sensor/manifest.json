@@ -1,7 +1,7 @@
 {
   "domain": "smoothed_sensor",
   "name": "Smoothed Sensor (EMA)",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "documentation": "https://github.com/PascalGodin/ha-smoothed-sensor",
   "issue_tracker": "https://github.com/PascalGodin/ha-smoothed-sensor/issues",
   "codeowners": [
