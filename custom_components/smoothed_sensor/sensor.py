@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from datetime import timedelta
 from typing import Any, Optional, List
 
@@ -23,12 +24,12 @@ from .const import (
     CONF_SOURCE,
     CONF_NAME,
     CONF_INTERVAL,
-    CONF_DECAY,
+    CONF_DECAY_MIN,          # MINUTES from UI
     CONF_UNIT,
     CONF_AGGREGATION,
     CONF_EXPOSE_INPUT,
     DEFAULT_INTERVAL,
-    DEFAULT_DECAY,
+    DEFAULT_DECAY_MIN,
     DEFAULT_AGGREGATION,
 )
 
@@ -63,16 +64,19 @@ class EmaSmoothedSensor(RestoreEntity, SensorEntity):
         self._source = options.get(CONF_SOURCE, data.get(CONF_SOURCE))
         self._name = options.get(CONF_NAME, data.get(CONF_NAME))
         self._interval = int(options.get(CONF_INTERVAL, data.get(CONF_INTERVAL, DEFAULT_INTERVAL)))
-        self._decay = float(options.get(CONF_DECAY, data.get(CONF_DECAY, DEFAULT_DECAY)))
+        # MINUTES → SECONDS
+        self._decay_min = float(options.get(CONF_DECAY_MIN, data.get(CONF_DECAY_MIN, DEFAULT_DECAY_MIN)))
+        self._decay_s = self._decay_min * 60.0
+
         self._aggregation = options.get(CONF_AGGREGATION, data.get(CONF_AGGREGATION, DEFAULT_AGGREGATION))
 
         unit_raw = options.get(CONF_UNIT, data.get(CONF_UNIT))
         self._unit = unit_raw if unit_raw else None
 
-        self._alpha = self._compute_alpha(self._interval, self._decay)
+        self._alpha = self._compute_alpha(self._interval, self._decay_s)
 
         self._attr_name = self._name
-        # Stable unique_id: based only on the config entry id
+        # Stable unique_id: config entry id only
         self._attr_unique_id = entry.entry_id
         if self._unit:
             self._attr_native_unit_of_measurement = self._unit
@@ -99,8 +103,10 @@ class EmaSmoothedSensor(RestoreEntity, SensorEntity):
 
     @staticmethod
     def _compute_alpha(dt_s: float, tau_s: float) -> float:
+        """EMA alpha from interval (dt_s) and decay time constant tau_s."""
         if tau_s <= 0:
             return 1.0  # no smoothing
+        # alpha = dt / (tau + dt) == 1 - exp(-dt/tau)
         return float(dt_s / (tau_s + dt_s))
 
     async def async_added_to_hass(self) -> None:
@@ -254,10 +260,12 @@ class EmaSmoothedSensor(RestoreEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
+        # expose both minutes & seconds for clarity
         return {
             "source": self._source,
             "interval_s": self._interval,
-            "decay_time_s": self._decay,
+            "decay_time_min": round(self._decay_min, 4),
+            "decay_time_s": round(self._decay_s, 3),
             "alpha": round(self._alpha, 6),
             "aggregation": self._aggregation,
             "last_input": None if self._last_input is None else round(self._last_input, 4),

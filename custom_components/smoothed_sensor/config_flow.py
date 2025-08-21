@@ -12,12 +12,12 @@ from .const import (
     CONF_SOURCE,
     CONF_NAME,
     CONF_INTERVAL,
-    CONF_DECAY,
+    CONF_DECAY_MIN,
     CONF_UNIT,
     CONF_AGGREGATION,
     CONF_EXPOSE_INPUT,
     DEFAULT_INTERVAL,
-    DEFAULT_DECAY,
+    DEFAULT_DECAY_MIN,
     DEFAULT_AGGREGATION,
     DEFAULT_EXPOSE_INPUT,
 )
@@ -43,10 +43,11 @@ class SmoothedSensorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_INTERVAL, default=DEFAULT_INTERVAL): vol.All(
                     vol.Coerce(int), vol.Range(min=1, max=3600)
                 ),
-                vol.Required(CONF_DECAY, default=DEFAULT_DECAY): vol.All(
+                # MINUTES in UI
+                vol.Required(CONF_DECAY_MIN, default=DEFAULT_DECAY_MIN): vol.All(
                     vol.Coerce(float), vol.Range(min=0.0)
                 ),
-                vol.Optional(CONF_UNIT): cv.string,  # no literal None in schema
+                vol.Optional(CONF_UNIT): cv.string,  # avoid literal None in schema
                 vol.Required(CONF_AGGREGATION, default=DEFAULT_AGGREGATION): selector(
                     {"select": {"options": AGGREGATION_OPTIONS}}
                 ),
@@ -82,7 +83,8 @@ class SmoothedSensorOptionsFlow(config_entries.OptionsFlow):
                 vol.Required(CONF_INTERVAL, default=data.get(CONF_INTERVAL, DEFAULT_INTERVAL)): vol.All(
                     vol.Coerce(int), vol.Range(min=1, max=3600)
                 ),
-                vol.Required(CONF_DECAY, default=data.get(CONF_DECAY, DEFAULT_DECAY)): vol.All(
+                # MINUTES in UI
+                vol.Required(CONF_DECAY_MIN, default=data.get(CONF_DECAY_MIN, DEFAULT_DECAY_MIN)): vol.All(
                     vol.Coerce(float), vol.Range(min=0.0)
                 ),
                 vol.Optional(CONF_UNIT, default=(data.get(CONF_UNIT) or "")): cv.string,
