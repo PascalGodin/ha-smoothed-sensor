@@ -1,7 +1,7 @@
 {
   "domain": "smoothed_sensor",
   "name": "Smoothed Sensor (EMA)",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "documentation": "https://github.com/PascalGodin/ha-smoothed-sensor",
   "issue_tracker": "https://github.com/PascalGodin/ha-smoothed-sensor/issues",
   "codeowners": [
@@ -12,6 +12,5 @@
   "iot_class": "local_polling",
   "loggers": [
     "custom_components.smoothed_sensor"
-  ],
-  "integration_type": "helper"
+  ]
 }

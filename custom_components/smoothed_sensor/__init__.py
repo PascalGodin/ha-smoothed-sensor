@@ -2,20 +2,24 @@ from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.typing import ConfigType
 
-from .const import DOMAIN
+from .const import DOMAIN, PLATFORMS
 
-PLATFORMS: list[str] = ["sensor"]
-
-
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up smoothed_sensor from a config entry."""
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    # NOTE: No options listener here. After changing Options in the UI,
-    # manually click "Reload" on the integration or restart HA.
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     return True
 
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    # Forward setup to platforms
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    # Reload the entry whenever options change so attributes/settings update immediately
+    async def _update_listener(hass: HomeAssistant, updated_entry: ConfigEntry) -> None:
+        await hass.config_entries.async_reload(updated_entry.entry_id)
+
+    entry.async_on_unload(entry.add_update_listener(_update_listener))
+    return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload the config entry."""
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    return unload_ok
