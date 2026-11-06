@@ -10,7 +10,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant, callback, State
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.event import (
     async_track_time_interval,
@@ -110,29 +110,19 @@ class EmaSmoothedSensor(RestoreEntity, SensorEntity):
         return float(dt_s / (tau_s + dt_s))
 
     async def async_added_to_hass(self) -> None:
-        # Mirror unit/device_class from source if not explicitly set
-        src = self.hass.states.get(self._source)
-        if src is not None:
-            attrs = src.attributes or {}
-            if not self._unit:
-                unit = attrs.get("unit_of_measurement")
-                if unit:
-                    self._unit = unit
-                    self._attr_native_unit_of_measurement = unit
-            dc = attrs.get("device_class")
-            if dc and self._attr_device_class is None and isinstance(dc, str):
-                try:
-                    self._attr_device_class = SensorDeviceClass(dc)
-                except ValueError:
-                    pass
 
         # Restore EMA state
         last = await self.async_get_last_state()
         if last and last.state not in (None, "unknown", "unavailable"):
             try:
                 self._state = float(last.state)
+                self._apply_attributes(last)
             except (ValueError, TypeError):
                 self._state = None
+        else:
+            # Mirror unit/device_class from source if not explicitly set
+            src = self.hass.states.get(self._source)
+            self._apply_attributes(src)
 
         # Listen for source updates (for aggregation)
         @callback
@@ -142,6 +132,7 @@ class EmaSmoothedSensor(RestoreEntity, SensorEntity):
                 return
             try:
                 val = float(new_state.state)
+                self._apply_attributes(new_state)
             except Exception:
                 return
 
@@ -191,6 +182,24 @@ class EmaSmoothedSensor(RestoreEntity, SensorEntity):
         if self._unsub_state:
             self._unsub_state()
             self._unsub_state = None
+
+    def _apply_attributes(self, source_state: State | None) -> None:
+        """Apply unit_of_measurement and device_class from the source State."""
+        if source_state is None:
+            return
+
+        attrs = source_state.attributes or {}
+        if not self._unit:
+            unit = attrs.get("unit_of_measurement")
+            if unit:
+                self._unit = unit
+                self._attr_native_unit_of_measurement = unit
+        dc = attrs.get("device_class")
+        if dc and self._attr_device_class is None and isinstance(dc, str):
+            try:
+                self._attr_device_class = SensorDeviceClass(dc)
+            except ValueError:
+                pass
 
     def _get_source_value(self) -> Optional[float]:
         st = self.hass.states.get(self._source)
